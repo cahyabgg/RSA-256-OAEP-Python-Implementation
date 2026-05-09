@@ -29,21 +29,23 @@ def generate_keys():
     dP = d % (p - 1)
     dQ = d % (q - 1)
     qInv = pow(q, -1, p)
+
+    d = (p, q, dP, dQ, qInv)
     
-    return e, (d, p, q, dP, dQ, qInv), n
+    return e, d, n
 
-def encrypt(m : bytes, e: int, n : int):
-    m = int.from_bytes(m)
+def encrypt(pt : bytes, e: int, n : int):
+    pt = int.from_bytes(pt)
     byte_size = ((n.bit_length() + 7) // 8)
-    return pow(m, e, n).to_bytes(byte_size)
+    return pow(pt, e, n).to_bytes(byte_size)
 
-def decrypt(c : bytes, key : tuple, n : int):
-    d, p, q, dP, dQ, qInv = key
+def decrypt(ct : bytes, d : tuple, n : int):
+    p, q, dP, dQ, qInv = d
 
-    c = int.from_bytes(c)
+    ct = int.from_bytes(ct)
 
-    m1 = pow(c, dP, p)
-    m2 = pow(c, dQ, q)
+    m1 = pow(ct, dP, p)
+    m2 = pow(ct, dQ, q)
 
     h = (qInv * (m1 - m2)) % p
     m = m2 + h * q

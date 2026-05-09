@@ -19,12 +19,12 @@ def generate_keys():
 
     return e, d, n
 
-def encrypt(m : bytes, e: int, n : int):
-    m = int.from_bytes(m)
+def encrypt(pt : bytes, e: int, n : int):
+    pt = int.from_bytes(pt)
     byte_size = ((n.bit_length() + 7) // 8)
-    return pow(m, e, n).to_bytes(byte_size)
+    return pow(pt, e, n).to_bytes(byte_size)
 
-def decrypt(c : bytes, d : int, n : int):
-    c = int.from_bytes(c)
+def decrypt(ct : bytes, d : int, n : int):
+    ct = int.from_bytes(ct)
     byte_size = ((n.bit_length() + 7) // 8)
-    return pow(c, d, n).to_bytes(byte_size)
+    return pow(ct, d, n).to_bytes(byte_size)
