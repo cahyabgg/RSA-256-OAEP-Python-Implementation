@@ -56,3 +56,37 @@ def gcd(a, b):
     while b != 0:
         a, b = b, a % b
     return a
+
+
+
+def get_random_odd(bits):
+    return get_random_int(bits) | 1
+
+"""
+Implementation based on this paper's Theorem 4.1
+
+Sun, Hung-Min & Hinek, M & wu, mu-en. (2005). 
+On the design of rebalanced RSA-CRT. 
+"""
+def solve_for_prime_component(e, n, n_e, n_d):
+    dp1_bits = (n // 2) - n_e
+    dp1 = get_random_odd(dp1_bits)
+    Ep = e * dp1
+
+    kp_bits = n_e + n_d - (n // 2)
+    
+    while True:
+        kp = get_random_int(kp_bits)
+        if kp > 0 and gcd(kp, Ep) == 1:
+            try:
+                dp2_base = pow(Ep, -1, kp)
+                dp2 = dp2_base + kp 
+                
+                p1 = (Ep * dp2 - 1) // kp
+                
+                p = p1 + 1
+                if is_prime(p):
+                    dp = dp1 * dp2
+                    return p, dp
+            except ValueError:
+                continue

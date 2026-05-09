@@ -1,38 +1,50 @@
 
+from utils import get_random_odd, is_prime, solve_for_prime_component
 
 """
-Inspired from this paper's scheme 1 RSA impl
-Kim, K., Jong, Y., & Song, Y. (2024). Decryption speed up of RSA by pre-calculation. In Proceedings of the 2023 International Conference on Mathematics, Intelligent Computing and Machine Learning (MICML '23) (pp. 11–16). Association for Computing Machinery. https://doi.org/10.1145/3638264.3638269
+Inspired by this paper impl of rsa signature using garner's algo
 
+Fouque, Pierre-Alain & Martinet, Gwenaëlle & Poupard, Guillaume. (2003). 
+Attacking unbalanced RSA-CRT using SPA. 
+Cryptographic Hardware and Embedded Systems - CHES 2003, 5th International Workshop. 2779. 
+10.1007/978-3-540-45238-6_21. 
+
+Also using this paper scheme b key generations
+
+Sun, Hung-Min & Hinek, M & wu, mu-en. (2005). 
+On the design of rebalanced RSA-CRT. 
 """
 
-from utils import get_prime, is_prime, gcd
-
-# RSA Key Generation
 def generate_keys():
-    
-    p = get_prime(1024)
-    q = get_prime(1024)
-    
-    n = p * q
-    phi = (p - 1) * (q - 1)
+    """
+    key_length : security parameter (modulus size)
+    n_e: bit length of e
+    n_d: target bit length for private exponents dp and dq
+    """
 
-    e = 65537
+    key_length = 2048
+    n_e = 512
+    n_d = 768
+
+    e = get_random_odd(n_e)
+    while not is_prime(e):
+        e = get_random_odd(n_e)
+
+    p, dp = solve_for_prime_component(e, key_length, n_e, n_d)
+
     while True:
-        if gcd(e, phi) == 1 and is_prime(e):
+        q, dq = solve_for_prime_component(e, key_length, n_e, n_d)
+        if p != q:
             break
-        e += 2
 
-    d = pow(e, -1, phi)
+    n = p * q
+    q_inv = pow(q, -1, p)
 
+    d = (p, q, dp, dq, q_inv)
 
-    dP = d % (p - 1)
-    dQ = d % (q - 1)
-    qInv = pow(q, -1, p)
+    protocol = "crt"
 
-    d = (p, q, dP, dQ, qInv)
-    
-    return e, d, n
+    return e, d, n, protocol
 
 def encrypt(pt : bytes, e: int, n : int):
     pt = int.from_bytes(pt)
@@ -40,15 +52,15 @@ def encrypt(pt : bytes, e: int, n : int):
     return pow(pt, e, n).to_bytes(byte_size)
 
 def decrypt(ct : bytes, d : tuple, n : int):
-    p, q, dP, dQ, qInv = d
+    p, q, dp, dq, q_inv = d
 
     ct = int.from_bytes(ct)
 
-    m1 = pow(ct, dP, p)
-    m2 = pow(ct, dQ, q)
+    m1 = pow(ct, dp, p)
+    m2 = pow(ct, dq, q)
 
-    h = (qInv * (m1 - m2)) % p
+    h = (q_inv * (m1 - m2)) % p
     m = m2 + h * q
 
     byte_size = ((n.bit_length() + 7) // 8)
-    return m.to_bytes(byte_size, 'big')
+    return m.to_bytes(byte_size)

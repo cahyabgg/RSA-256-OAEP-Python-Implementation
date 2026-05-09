@@ -1,7 +1,6 @@
 
 from utils import get_prime, is_prime, gcd
 
-# RSA Key Generation
 def generate_keys():
     p = get_prime(1024)
     q = get_prime(1024)
@@ -17,7 +16,9 @@ def generate_keys():
 
     d = pow(e, -1, phi)
 
-    return e, d, n
+    protocol = "textbook"
+
+    return e, d, n, protocol
 
 def encrypt(pt : bytes, e: int, n : int):
     pt = int.from_bytes(pt)
