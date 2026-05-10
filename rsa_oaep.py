@@ -1,43 +1,84 @@
-from rsa_crt import encrypt,decrypt, generate_keys
 from oaep import oaep_encode, oaep_decode
-from file_handler import file_chunk_iterator, write_metadata, read_metadata
+from file_handler import file_chunk_iterator
+from key_handler import save_public_key, save_private_key, load_public_key, load_private_key
 
-e, d, n, protocol = generate_keys()
+# Default OAEP label (empty string per standard)
+OAEP_LABEL = ""
 
-def file_encrypt(filename):
 
-    filename_out = filename[:filename.find(".")] + ".rsa"
+def generate_and_save_keys(public_key_path, private_key_path, protocol="crt"):
+    """Generate RSA key pair and save to hex files."""
+    if protocol == "crt":
+        from rsa_crt import generate_keys
+    elif protocol == "precalc":
+        from rsa_precalc import generate_keys
+    else:
+        from rsa_textbook import generate_keys
 
-    write_metadata(filename, filename_out)
+    e, d, n, protocol = generate_keys()
+    save_public_key(public_key_path, e, n, protocol)
+    save_private_key(private_key_path, d, n, protocol)
+    return e, d, n, protocol
 
-    file_iterator = file_chunk_iterator(filename)
-    with open(filename_out, "ab") as out:
+
+def _get_encrypt_func(protocol):
+    if protocol == "crt":
+        from rsa_crt import encrypt
+    elif protocol == "precalc":
+        from rsa_precalc import encrypt
+    else:
+        from rsa_textbook import encrypt
+    return encrypt
+
+
+def _get_decrypt_func(protocol):
+    if protocol == "crt":
+        from rsa_crt import decrypt
+    elif protocol == "precalc":
+        from rsa_precalc import decrypt
+    else:
+        from rsa_textbook import decrypt
+    return decrypt
+
+
+def file_encrypt(plaintext_file, public_key_file, output_file):
+    """
+    Encrypt a file using RSA-OAEP-256.
+
+    Args:
+        plaintext_file: path to the file to encrypt (any binary file)
+        public_key_file: path to the public key file (hex format)
+        output_file: path to write the ciphertext
+    """
+    e, n, protocol = load_public_key(public_key_file)
+    encrypt = _get_encrypt_func(protocol)
+
+    file_iterator = file_chunk_iterator(plaintext_file)
+    with open(output_file, "wb") as out:
         for chunk in file_iterator:
-            encoded_chunk = oaep_encode(filename, n, chunk)
-            encrypted_encoded_chunk = encrypt(encoded_chunk,e,n)
+            encoded_chunk = oaep_encode(OAEP_LABEL, n, chunk)
+            encrypted_encoded_chunk = encrypt(encoded_chunk, e, n)
             out.write(encrypted_encoded_chunk)
 
-def file_decrypt(filename):
 
-    label_length, original_label = read_metadata(filename)
-    
-    chunk_size = 0
-    if protocol == "precalc":
-        chunk_size = 512
-    else:
-        chunk_size = 256
+def file_decrypt(ciphertext_file, private_key_file, output_file):
+    """
+    Decrypt a file using RSA-OAEP-256.
 
-    file_iterator = file_chunk_iterator(filename,chunk_size, label_length)
+    Args:
+        ciphertext_file: path to the encrypted file
+        private_key_file: path to the private key file (hex format)
+        output_file: path to write the decrypted plaintext
+    """
+    d, n, protocol = load_private_key(private_key_file)
+    decrypt = _get_decrypt_func(protocol)
 
-    with open(original_label, "wb") as out:
+    chunk_size = 512 if protocol == "precalc" else 256
+
+    file_iterator = file_chunk_iterator(ciphertext_file, chunk_size)
+
+    with open(output_file, "wb") as out:
         for chunk in file_iterator:
-            decrypted_encoded_chunk = decrypt(chunk,d,n)
-            decoded_chunk = oaep_decode(original_label, n, decrypted_encoded_chunk)
+            decrypted_encoded_chunk = decrypt(chunk, d, n)
+            decoded_chunk = oaep_decode(OAEP_LABEL, n, decrypted_encoded_chunk)
             out.write(decoded_chunk)
-
-if __name__ == "__main__":
-    filename = r"rec_0923.wav"
-    filename_out = filename[:filename.find(".")] + ".rsa"
-
-    file_encrypt(filename)
-    file_decrypt(filename_out)
