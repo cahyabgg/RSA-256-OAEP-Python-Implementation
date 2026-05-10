@@ -6,7 +6,7 @@ e, d, n, protocol = generate_keys()
 
 def file_encrypt(filename):
 
-    filename_out = filename[:filename.find(".") - 1] + ".rsa"
+    filename_out = filename[:filename.find(".")] + ".rsa"
 
     write_metadata(filename, filename_out)
 
@@ -16,9 +16,6 @@ def file_encrypt(filename):
             encoded_chunk = oaep_encode(filename, n, chunk)
             encrypted_encoded_chunk = encrypt(encoded_chunk,e,n)
             out.write(encrypted_encoded_chunk)
-    
-    out.close()
-
 
 def file_decrypt(filename):
 
@@ -38,10 +35,9 @@ def file_decrypt(filename):
             decoded_chunk = oaep_decode(original_label, n, decrypted_encoded_chunk)
             out.write(decoded_chunk)
 
-    out.close()
+if __name__ == "__main__":
+    filename = r"rec_0923.wav"
+    filename_out = filename[:filename.find(".")] + ".rsa"
 
-filename = r"rec_0923.wav"
-filename_out = filename[:filename.find(".") - 1] + ".rsa"
-
-file_encrypt(filename)
-file_decrypt(filename_out)
+    file_encrypt(filename)
+    file_decrypt(filename_out)

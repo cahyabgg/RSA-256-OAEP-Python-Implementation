@@ -16,7 +16,7 @@ def write_metadata(filename_in, filename_out):
     with open(filename_out, 'wb') as f:
         f.write(label_length.to_bytes(1))
         f.write(label_bytes)
-    f.close()
+
 
 
         
@@ -29,6 +29,6 @@ def read_metadata(filename):
         label_length = int.from_bytes(f.read(1), 'big')
         original_label = f.read(label_length).decode('utf-8')
 
-    f.close()
+
 
     return label_length + 1, original_label
