@@ -1,4 +1,4 @@
-from hashlib import sha256
+from sha256 import sha256
 from os import urandom
 
 def mgf1(seed: bytes, length: int, hash_func=sha256) -> bytes:
