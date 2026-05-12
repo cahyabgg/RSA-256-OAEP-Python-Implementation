@@ -19,6 +19,18 @@ File ini menggabungkan RSA (saat ini menggunakan versi CRT) dengan padding **OAE
 
 ## Cara Menggunakan
 
-Untuk menggunakan program ini, Anda dapat menjalankan file `rsa_oaep.py`. Sayangnya untuk saat ini masih hardcode untuk file apa yang akan di enkripsi, jadi masih butuh GUI nya
+Untuk menggunakan program ini, Anda dapat menjalankan file `gui.py`
 
-Selain itu versi RSA yang digunakan diatur di file ini, tanpa mengubah banyak tinggal mengganti from import rsanya saja
+##### **Direkomendasikan anda mengenerate key di tab generate key diatas, lalu pilih tempat anda ingin menempatkan public dan private key**
+
+### Untuk enkripsi 
+- Klik tab encrypt
+- Pilih file encrypt (kami rekomendasikan menggunakan tombol upload file)
+- Pilih file public key (kami merekomendasikan dengan tombol upload key)
+- Terakhir klik encrypt file di bawah kanan
+
+### Untuk dekripsi
+- Klik tab decrypt
+- Pilih file ciphertext (kami rekomendasikan menggunakan tombol upload file)
+- Pilih file private key (kami merekomendasikan dengan tombol upload key)
+- Terakhir klik decrypt file di bawah kanan
