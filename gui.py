@@ -135,13 +135,19 @@ class RSAOAEPGUI(tk.Tk):
             command=self._load_public_key_file,
         ).grid(row=0, column=2, pady=(0, 6))
 
+        ttk.Label(
+            parent,
+            text="Peringatan: algoritma key untuk enkripsi harus sesuai dengan algoritma enkripsi.",
+            wraplength=650,
+        ).grid(row=5, column=0, columnspan=3, sticky="w", pady=(8, 10))
+
         encrypt_button = ttk.Button(
             parent,
             text="Encrypt File",
             style="Primary.TButton",
             command=self._start_encrypt,
         )
-        encrypt_button.grid(row=5, column=2, sticky="e")
+        encrypt_button.grid(row=6, column=2, sticky="e")
         self.action_buttons.append(encrypt_button)
 
     def _build_decrypt_tab(self, parent):
@@ -172,27 +178,34 @@ class RSAOAEPGUI(tk.Tk):
             button_text="Upload Private Key",
             command=self._load_private_key_file,
         )
+
+        ttk.Label(
+            parent,
+            text="Peringatan: algoritma key untuk dekripsi harus sesuai dengan algoritma dekripsi.",
+            wraplength=650,
+        ).grid(row=2, column=0, columnspan=3, sticky="w", pady=(8, 6))
+
         self._path_row(
             parent,
-            row=2,
+            row=3,
             label="Output plaintext",
             variable=self.dec_output_var,
             button_text="Simpan Sebagai",
             command=lambda: self._choose_save_file(self.dec_output_var),
         )
 
-        ttk.Label(parent, text="Algoritma").grid(row=3, column=0, sticky="w", pady=6)
+        ttk.Label(parent, text="Algoritma").grid(row=4, column=0, sticky="w", pady=6)
         ttk.Combobox(
             parent,
             textvariable=self.dec_protocol_var,
             values=list(PROTOCOLS.keys()),
             state="readonly",
             width=18,
-        ).grid(row=3, column=1, sticky="w", pady=6)
+        ).grid(row=4, column=1, sticky="w", pady=6)
 
         help_text = "Peringatan: algoritma yang dipakai untuk dekripsi harus sesuai dengan algoritma enkripsi. "
         ttk.Label(parent, text=help_text, wraplength=650).grid(
-            row=4,
+            row=5,
             column=0,
             columnspan=3,
             sticky="w",
@@ -205,7 +218,7 @@ class RSAOAEPGUI(tk.Tk):
             style="Primary.TButton",
             command=self._start_decrypt,
         )
-        decrypt_button.grid(row=5, column=2, sticky="e")
+        decrypt_button.grid(row=6, column=2, sticky="e")
         self.action_buttons.append(decrypt_button)
 
     def _build_keygen_tab(self, parent):
@@ -515,27 +528,14 @@ class RSAOAEPGUI(tk.Tk):
         return "\n".join(lines) + "\n"
 
     def _read_key_protocol(self, key_path):
-        found_keys = set()
         with open(key_path, "r") as key_file:
             for line in key_file:
                 key, separator, value = line.strip().partition("=")
-                if not separator:
-                    continue
-                elif key == "protocol":
+                if separator and key == "protocol":
                     protocol = value.strip()
                     if protocol not in PROTOCOLS:
                         raise ValueError(f"Algoritma key tidak dikenal: {protocol}")
                     return protocol
-                else:
-                    found_keys.add(key)
-        
-        if any(key in found_keys for key in ["d0p", "d1p", "h"]):
-            return "precalc"
-        elif any(key in found_keys for key in ["dp", "dq"]):
-            return "crt"
-        elif any(key in found_keys for key in ["d", "n"]):
-            return "textbook"
-        
         return None
 
     def _run_worker(self, action_name, task, success_message):
