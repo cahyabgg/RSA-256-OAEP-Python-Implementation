@@ -173,37 +173,37 @@ class RSAOAEPGUI(tk.Tk):
         self._path_row(
             parent,
             row=1,
-            label="Private key",
-            variable=self.dec_private_key_var,
-            button_text="Upload Private Key",
-            command=self._load_private_key_file,
-        )
-
-        ttk.Label(
-            parent,
-            text="Peringatan: algoritma key untuk dekripsi harus sesuai dengan algoritma dekripsi.",
-            wraplength=650,
-        ).grid(row=2, column=0, columnspan=3, sticky="w", pady=(8, 6))
-
-        self._path_row(
-            parent,
-            row=3,
             label="Output plaintext",
             variable=self.dec_output_var,
             button_text="Simpan Sebagai",
             command=lambda: self._choose_save_file(self.dec_output_var),
         )
 
-        ttk.Label(parent, text="Algoritma").grid(row=4, column=0, sticky="w", pady=6)
+        ttk.Label(parent, text="Algoritma").grid(row=2, column=0, sticky="w", pady=6)
         ttk.Combobox(
             parent,
             textvariable=self.dec_protocol_var,
             values=list(PROTOCOLS.keys()),
             state="readonly",
             width=18,
-        ).grid(row=4, column=1, sticky="w", pady=6)
+        ).grid(row=2, column=1, sticky="w", pady=6)
 
-        help_text = "Peringatan: algoritma yang dipakai untuk dekripsi harus sesuai dengan algoritma enkripsi. "
+        ttk.Label(
+            parent,
+            text="Peringatan: algoritma yang dipakai untuk dekripsi harus sesuai dengan algoritma enkripsi. ",
+            wraplength=650,
+        ).grid(row=3, column=0, columnspan=3, sticky="w", pady=(8, 6))
+
+        self._path_row(
+            parent,
+            row=4,
+            label="Private key",
+            variable=self.dec_private_key_var,
+            button_text="Upload Private Key",
+            command=self._load_private_key_file,
+        )
+
+        help_text = "Peringatan: algoritma key untuk dekripsi harus sesuai dengan algoritma dekripsi. "
         ttk.Label(parent, text=help_text, wraplength=650).grid(
             row=5,
             column=0,
