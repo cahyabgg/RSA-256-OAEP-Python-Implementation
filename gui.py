@@ -515,14 +515,27 @@ class RSAOAEPGUI(tk.Tk):
         return "\n".join(lines) + "\n"
 
     def _read_key_protocol(self, key_path):
+        found_keys = set()
         with open(key_path, "r") as key_file:
             for line in key_file:
                 key, separator, value = line.strip().partition("=")
-                if separator and key == "protocol":
+                if not separator:
+                    continue
+                elif key == "protocol":
                     protocol = value.strip()
                     if protocol not in PROTOCOLS:
                         raise ValueError(f"Algoritma key tidak dikenal: {protocol}")
                     return protocol
+                else:
+                    found_keys.add(key)
+        
+        if any(key in found_keys for key in ["d0p", "d1p", "h"]):
+            return "precalc"
+        elif any(key in found_keys for key in ["dp", "dq"]):
+            return "crt"
+        elif any(key in found_keys for key in ["d", "n"]):
+            return "textbook"
+        
         return None
 
     def _run_worker(self, action_name, task, success_message):

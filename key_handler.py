@@ -88,7 +88,7 @@ def load_public_key(filepath):
                 key, value = line.split("=", 1)
                 data[key] = value
 
-    protocol = data["protocol"]
+    protocol = discover_alg_protocol(data)
     n = _hex_to_int(data["n"])
 
     if protocol == "precalc":
@@ -116,7 +116,7 @@ def load_private_key(filepath):
                 key, value = line.split("=", 1)
                 data[key] = value
 
-    protocol = data["protocol"]
+    protocol = discover_alg_protocol(data)
     n = _hex_to_int(data["n"])
 
     if protocol == "crt":
@@ -142,3 +142,16 @@ def load_private_key(filepath):
         d = _hex_to_int(data["d"])
 
     return d, n, protocol
+
+def discover_alg_protocol(data : dict):
+    
+    if "protocol" in data.keys():
+        return data["protocol"]
+    elif any(key in data.keys() for key in ["d0p", "d1p", "h"]):
+        return "precalc"
+    elif any(key in data.keys() for key in ["dp", "dq"]):
+        return "crt"
+    elif any(key in data.keys() for key in ["d", "n"]):
+        return "textbook"
+    else:
+        raise KeyError("RSA Protocol cannot be found")
