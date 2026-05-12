@@ -56,7 +56,7 @@ def file_encrypt(plaintext_file, public_key_file, output_file):
     file_iterator = file_chunk_iterator(plaintext_file)
     with open(output_file, "wb") as out:
         for chunk in file_iterator:
-            encoded_chunk = oaep_encode(OAEP_LABEL, n, chunk)
+            encoded_chunk = oaep_encode(OAEP_LABEL, 256, chunk)
             encrypted_encoded_chunk = encrypt(encoded_chunk, e, n)
             out.write(encrypted_encoded_chunk)
 
@@ -80,5 +80,5 @@ def file_decrypt(ciphertext_file, private_key_file, output_file):
     with open(output_file, "wb") as out:
         for chunk in file_iterator:
             decrypted_encoded_chunk = decrypt(chunk, d, n)
-            decoded_chunk = oaep_decode(OAEP_LABEL, n, decrypted_encoded_chunk)
+            decoded_chunk = oaep_decode(OAEP_LABEL, 256, decrypted_encoded_chunk)
             out.write(decoded_chunk)
